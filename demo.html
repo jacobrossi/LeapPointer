@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+    <title>LeapPointer Demo</title>
+    <script src="leap_sdk.js"></script>
+    <script src="leap_sdk_plugin.js"></script>
+    <script src="LeapPointer.js"></script>
+    <style>
+        html, body { width: 100%; height: 100%; }
+		canvas {
+			touch-action: none; /* Disable panning */
+            width: 100%;
+            height: 100%;
+		}
+	</style>
+</head>
+<body>
+<canvas width="1680" height="1050"></canvas>
+<script>
+window.addEventListener("pointermove", paint);
+var pointers = [];
+var colors = ["red", "blue", "green", "yellow", "black", "orange"];
+var context = document.querySelector("canvas").getContext("2d");
+function paint(event) {
+    if(event.pointerType == "touch")
+        console.log(event.clientX);
+
+    if(!pointers[event.pointerId]) {
+        pointers[event.pointerId] = [{x: event.offsetX, y: event.offsetY}, 
+                                {x: event.offsetX, y: event.offsetY}, 
+                                {x: event.offsetX, y: event.offsetY}, 
+                                {x: event.offsetX, y: event.offsetY}];
+    }
+
+    event.preventDefault();
+    //Get points for this pointerId
+    var points = pointers[event.pointerId];
+    //Create path
+    context.beginPath();
+    context.moveTo(points[0].x, points[0].y);
+    context.bezierCurveTo(	points[1].x, points[1].y, 
+                            points[2].x, points[2].y, 
+                            points[3].x, points[3].y);
+    
+    //Paint path
+    context.lineWidth = (event.width + event.height)*3 || event.pressure*10 || 4; //Use width
+    context.strokeStyle = colors[event.pointerId%colors.length];
+    context.stroke();
+    context.closePath();
+
+    //Update points
+    pointers[event.pointerId].shift();
+    pointers[event.pointerId].push({x: event.offsetX, y: event.offsetY});
+
+	}
+</script>
+</body>
+</html>
